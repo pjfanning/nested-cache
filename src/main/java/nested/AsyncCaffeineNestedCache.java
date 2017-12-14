@@ -2,27 +2,27 @@ package nested;
 
 import java.util.concurrent.TimeUnit;
 
-import com.github.benmanes.caffeine.cache.AsyncLoadingCache;
 import com.github.benmanes.caffeine.cache.CacheLoader;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 
 public class AsyncCaffeineNestedCache {
     class FactorialLoader implements CacheLoader<Integer, Long> {
         @Override
-        public Long load(Integer key) throws Exception {
+        public Long load(Integer key) {
             if (key == 0) {
                 return 1L;
             }
-            return key * cache.get(key - 1).get();
+            return key * cache.get(key - 1);
         }
     }
 
-    AsyncLoadingCache<Integer, Long> cache = Caffeine.newBuilder()
+    LoadingCache<Integer, Long> cache = Caffeine.newBuilder()
             .maximumSize(10_000)
             .expireAfterWrite(10, TimeUnit.MINUTES)
-            .buildAsync(new FactorialLoader());
+            .buildAsync(new FactorialLoader()).synchronous();
 
-    public long factorial(int n) throws Exception {
-        return cache.get(n).get();
+    public long factorial(int n) {
+        return cache.get(n);
     }
 }
